@@ -1,9 +1,15 @@
 import React, { Component } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
-import { getMetricMetaInfo, timeToString } from '../utils/helpers';
+import { getMetricMetaInfo, timeToString, getDailyReminderValue } from '../utils/helpers';
 import UdaciSlider from './UdaciSlider';
 import UdaciStepper from './UdaciStepper';
+import TextButton from './TextButton';
 import DateHeader from './DateHeader';
+import { Ionicons } from '@expo/vector-icons';
+import { removeEntry, submitEntry } from '../utils/api';
+import { connect } from 'react-redux';
+import { addEntry } from '../actions';
+
 
 SubmitButton = ({ onPress }) => {
   return (
@@ -12,9 +18,9 @@ SubmitButton = ({ onPress }) => {
       <Text>Submit</Text>
     </TouchableOpacity>
   )
-}
+};
 
-export default class AddEntry extends Component {
+class AddEntry extends Component {
   state = {
     run: 0,
     bike: 0,
@@ -57,6 +63,10 @@ export default class AddEntry extends Component {
     const key = timeToString();
     const entry = this.state;
     // Update Redux
+    this.props.dispatch(addEntry({
+      [key]: entry,
+    }));
+    // RESET state
     this.setState(() => ({
         run: 0,
         bike: 0,
@@ -65,14 +75,39 @@ export default class AddEntry extends Component {
         eat: 0,
     }));
     // Navigate to home
-    // Save To DB
+    // Save to local storage
+    submitEntry({key, entry});
     // Clear local notifications
+  }
+
+  reset = () => {
+    const key = timeToString();
+    this.props.dispatch({
+      [key]: getDailyReminderValue()
+    })
+    removeEntry(key);
   }
 
   render() {
   
     const metaInfo = getMetricMetaInfo();
 
+    if(this.props.alreadyLogged)  {
+      return (
+        <View>
+          <Ionicons
+            name='ios-happy-outline'
+            size={100}
+          />
+          <Text>
+            You Already Logged your Information for today
+          </Text>
+          <TextButton onPress={this.reset}>
+            Reset
+          </TextButton>
+        </View>
+      )
+    }
     return (
       <View>
         <DateHeader date={(new Date()).toLocaleDateString()} />
@@ -106,3 +141,12 @@ export default class AddEntry extends Component {
   };
 
 }
+
+function mapStateToProps (state) {
+  const key = timeToString()
+   return {
+    alreadyLogged: state[key] && typeof state[key].today === 'undefined'
+  }
+}
+
+export default connect()(AddEntry);
