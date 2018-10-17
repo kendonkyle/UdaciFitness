@@ -63,7 +63,7 @@ export function getMetricMetaInfo(metric) {
     run: {
       displayName: 'Run',
       max: 50,
-      unit: 'kilometers',
+      unit: 'KM',
       step: 1,
       type: 'stepper',
       getIcon() {
@@ -81,7 +81,7 @@ export function getMetricMetaInfo(metric) {
     bike: {
         displayName: 'Bike',
         max: 150,
-        unit: 'kilometers',
+        unit: 'KM',
         step: 1,
         type: 'stepper',
         getIcon() {
